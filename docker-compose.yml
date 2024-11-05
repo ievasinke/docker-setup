@@ -1,13 +1,11 @@
-version: '3.8'
-
 services:
   nginx:
     image: nginx:1.27
-    container_name: product-manager-nginx
     ports:
       - "8080:80"
     volumes:
-      - ./app:/var/www/html
+      - ./src:/var/www/src
+      - vendor_data:/var/www/vendor
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php
@@ -17,20 +15,17 @@ services:
     build:
       context: .
       dockerfile: ./docker/php/Dockerfile
-    image: product-manager-php:8.2-fpm
     volumes:
-      - ./app:/var/www/html
+      - ./src:/var/www/src
+      - vendor_data:/var/www/vendor
+      - ./composer.json:/var/www/composer.json
+      - ./composer.lock:/var/www/composer.lock
     depends_on:
       - mysql
 
   mysql:
     image: mysql:8.0
-    container_name: product-manager-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: product_manager
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+    env_file: ".env"
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
@@ -38,3 +33,4 @@ services:
 
 volumes:
   mysql_data:
+  vendor_data:
